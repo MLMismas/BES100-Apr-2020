@@ -1,13 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LibraryApi.Services;
+using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LibraryApi.Controllers 
 {
     public class StatusController : Controller
     {
+
+        ISystemTime _systemTime;
+
+        public StatusController(ISystemTime systemTime)
+        {
+            _systemTime = systemTime;
+        }
+
+
         // GET /status 
         [HttpGet("/status")]
         public ActionResult GetTheStatus()
@@ -16,9 +23,39 @@ namespace LibraryApi.Controllers
             {
                 Message = "Everything is golden!",
                 CheckedBy = "Joe Schmo",
-                WhenLastChecked = DateTime.Now
+                WhenLastChecked = _systemTime.GetCurrent()
             };
             return Ok(response);
+        }
+
+        [HttpGet("employees/{employeeId:int:min(1)}/salary")]
+        public ActionResult GetEmployeeSalary(int employeeId)
+        {
+            return Ok($"The Employee {employeeId} has a salary of $72,000.00");
+        }
+
+        [HttpGet("employees")]
+        public ActionResult GetEmployees([FromQuery]string dept = "All")
+        {
+            return Ok($"Returning employees for department {dept}");
+        }
+
+        // kinds of resources (resource archetaypes)
+        // document - a single item get employee/52
+        // collection - a plural get employees?dept=DEV
+        // store
+        // controller
+
+        [HttpGet("whoami")]
+        public ActionResult WhoAmI([FromHeader(Name ="User-Agent")] string userAgent)
+        {
+            return Ok($"I see you are running {userAgent}");
+        }
+
+        [HttpPost("employees")]
+        public ActionResult HireEmployee([FromBody] EmployeeCreateRequest employeeToHire)
+        {
+            return Ok($"Hiring {employeeToHire.LastName} as a {employeeToHire.Department}");
         }
     }
 
@@ -27,5 +64,13 @@ namespace LibraryApi.Controllers
         public string Message { get; set; }
         public string CheckedBy { get; set; }
         public DateTime WhenLastChecked { get; set; }
+    }
+
+    public class EmployeeCreateRequest
+    {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Department { get; set; }
+
     }
 }

@@ -1,0 +1,67 @@
+﻿using LibraryApi;
+using LibraryApi.Services;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+
+namespace LibraryApiIntegrationTests
+{
+    public class WebTestFixture : WebApplicationFactory<Startup>
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseEnvironment("Testing");
+
+            builder.ConfigureServices(services =>
+            {
+                // find service that uses ISystemTime
+                var descriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(ISystemTime));
+                
+                // if the service is not null
+                if(descriptor != null)
+                {
+                    // replace service with TestingSystemTime
+                    services.Remove(descriptor);
+                    services.AddTransient<ISystemTime, TestingSystemTime>();
+                }
+                var provider = services                   
+                    .BuildServiceProvider();
+
+               
+               
+
+              
+                var sp = services.BuildServiceProvider();
+
+               
+                using (var scope = sp.CreateScope())
+                {
+                    var scopedServices = scope.ServiceProvider;
+                   
+                    var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();
+
+                    var logger = scopedServices
+                        .GetRequiredService<ILogger<WebTestFixture>>();
+
+                 
+                   
+
+                    try
+                    {
+      
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, $"An error occurred seeding the " +
+                            "database with test messages. Error: {ex.Message}");
+                    }
+                }
+            });
+        }
+    }
+}
